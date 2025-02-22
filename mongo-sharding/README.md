@@ -7,43 +7,74 @@
 ```shell
 docker compose up -d
 ```
+### В консоли конфигурируем configSrv командами:
+docker exec -it configSrv mongosh --port 27017
+#### Параметр
+rs.initiate(
+    {
+        _id : "configReplSet",
+        configsvr: true,
+        members: [
+        { _id : 0, host : "configSrv:27017" }
+        ]
+    }
+);
 
-Заполняем mongodb данными
+### В консоли конфигурируем shard1 командами:
+docker exec -it shard1 mongosh --port 27018
+#### Параметр
+rs.initiate(
+    {
+        _id : "shard1ReplSet",
+        members: [
+        { _id : 0, host : "shard1:27018" }
+        ]
+    }
+);
 
-```shell
-./scripts/mongo-init.sh
-```
+### В консоли конфигурируем shard2 командами:
+docker exec -it shard2 mongosh --port 27019
+#### Параметр
+rs.initiate(
+    {
+        _id : "shard2ReplSet",
+        members: [
+        { _id : 0, host : "shard2:27019" }
+        ]
+    }
+);
 
-## Как проверить
+### В консоли конфигурируем mongos_router командами:
+docker exec -it mongos_router mongosh --port 27020
+#### Параметр
+sh.addShard("shard1ReplSet/shard1:27018");
+sh.addShard("shard2ReplSet/shard2:27019");
 
-### Если вы запускаете проект на локальной машине
+#### Создаем и заполняем данными
 
-Откройте в браузере http://localhost:8080
+sh.enableSharding("somedb");
+sh.shardCollection("somedb.helloDoc", { "name" : "hashed" } )
+use somedb
+for(var i = 0; i < 1000; i++) db.helloDoc.insert({age:i, name:"ly"+i})
 
-### Если вы запускаете проект на предоставленной виртуальной машине
+#### Проверка (Ответ: 1000)
+db.helloDoc.countDocuments()
 
-Узнать белый ip виртуальной машины
 
-```shell
-curl --silent http://ifconfig.me
-```
+### Заходим для проверки на шард shard1
+docker exec -it shard1 mongosh --port 27018
+#### Параметр
+use somedb;
+db.helloDoc.countDocuments();
+#### Ответ: 492
 
-Откройте в браузере http://<ip виртуальной машины>:8080
 
-## Доступные эндпоинты
+### Заходим для проверки на шард shard2
+docker exec -it shard2 mongosh --port 27019
+#### Параметр
+use somedb;
+db.helloDoc.countDocuments();
+#### Ответ: 508
 
-Список доступных эндпоинтов, swagger http://<ip виртуальной машины>:8080/docs
-
-Описание инфраструктуры
-
-Docker Compose поднимает следующие сервисы:
-
-configSrv – сервер конфигурации для шардинга.
-
-shard1 – первый шард MongoDB.
-
-shard2 – второй шард MongoDB.
-
-mongos_router – роутер MongoDB, через который приложение взаимодействует с БД.
-
-pymongo_api – API-сервис, который подключается к mongos_router.
+### ПОЗВОЛЯЕТ УДАЛИТЬ ВСЕМ VOLUME, котороые могу мешаться и вызывать ошибки
+docker-compose down --volumes
