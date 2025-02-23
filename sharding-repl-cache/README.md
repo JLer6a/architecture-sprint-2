@@ -23,32 +23,32 @@ rs.initiate(
 ### В консоли конфигурируем shard1 командами:
 docker exec -it shard1 mongosh --port 27018
 #### Параметр
-rs.initiate(
-    {
-        _id : "shard1ReplSet",
-        members: [
-        { _id : 0, host : "shard1:27018" }
-        ]
-    }
-);
+rs.initiate({
+_id: "shard1",
+members: [
+{ _id: 0, host: "mongo_shard1_a:27018" },
+{ _id: 1, host: "mongo_shard1_b:27018" },
+{ _id: 2, host: "mongo_shard1_c:27018" }
+]
+});
 
 ### В консоли конфигурируем shard2 командами:
 docker exec -it shard2 mongosh --port 27019
 #### Параметр
-rs.initiate(
-    {
-        _id : "shard2ReplSet",
-        members: [
-        { _id : 0, host : "shard2:27019" }
-        ]
-    }
-);
+rs.initiate({
+_id: "shard2",
+members: [
+{ _id: 0, host: "mongo_shard2_a:27018" },
+{ _id: 1, host: "mongo_shard2_b:27018" },
+{ _id: 2, host: "mongo_shard2_c:27018" }
+]
+});
 
 ### В консоли конфигурируем mongos_router командами:
 docker exec -it mongos_router mongosh --port 27020
 #### Параметр
-sh.addShard("shard1ReplSet/shard1:27018");
-sh.addShard("shard2ReplSet/shard2:27019");
+sh.addShard("shard1/mongo_shard1_a:27018,mongo_shard1_b:27018,mongo_shard1_c:27018");
+sh.addShard("shard2/mongo_shard2_a:27018,mongo_shard2_b:27018,mongo_shard2_c:27018");
 
 #### Создаем и заполняем данными
 
