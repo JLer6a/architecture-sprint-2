@@ -21,7 +21,7 @@ rs.initiate(
 );
 
 ### В консоли конфигурируем shard1 командами:
-docker exec -it shard1 mongosh --port 27018
+docker exec -it mongo_shard1_a mongosh --port 27018
 #### Параметр
 rs.initiate({
 _id: "shard1",
@@ -33,7 +33,7 @@ members: [
 });
 
 ### В консоли конфигурируем shard2 командами:
-docker exec -it shard2 mongosh --port 27019
+docker exec -it mongo_shard2_a mongosh --port 27019
 #### Параметр
 rs.initiate({
 _id: "shard2",
