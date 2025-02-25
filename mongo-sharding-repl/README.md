@@ -33,3 +33,17 @@ curl --silent http://ifconfig.me
 ## Доступные эндпоинты
 
 Список доступных эндпоинтов, swagger http://<ip виртуальной машины>:8080/docs
+
+Описание инфраструктуры
+
+Docker Compose поднимает следующие сервисы:
+
+configSrv – сервер конфигурации для шардинга.
+
+shard1 – первый шард MongoDB.
+
+shard2 – второй шард MongoDB.
+
+mongos_router – роутер MongoDB, через который приложение взаимодействует с БД.
+
+pymongo_api – API-сервис, который подключается к mongos_router.
